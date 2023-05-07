@@ -32,26 +32,42 @@ def add_client(cur, name=None, surname=None, email=None, phone_number=None):
         LIMIT 1
         """)
     id = cur.fetchone()[0]
-    if phone_number is None:
-        return id
-    else:
+    if phone_number is not None:
         add_phone(cur, id, phone_number)
-        return id
+
+# Добавление телефона
 
 def add_phone(cur, client_id, phone_number):
     cur.execute("""
         INSERT INTO phone(phone_number, client_id)
         VALUES (%s, %s)
-        """, (phone_number, client_id))
-    return client_id
+        """)
 
 
 
-def change_client(conn, client_id, first_name=None, last_name=None, email=None):
-    pass
+def change_client(conn, id, name=None, surname=None, email=None):
+    cur.execute("""
+        SELECT * from client
+        WHERE id = %s
+        """, (id, ))
+    info = cur.fetchone()
+    if name is None:
+        name = info[1]
+    if surname is None:
+        surname = info[2]
+    if email is None:
+        email = info[3]
+    cur.execute("""
+        UPDATE client
+        SET name = %s, surname = %s, email =%s 
+        where id = %s
+        """, (name, surname, email, id))
 
-def delete_phone(conn, client_id, phone):
-    pass
+def delete_phone(conn, id, phone_number):
+    cur.execute("""
+        DELETE FROM phone 
+        WHERE phone_number = %s
+        """, (phone_number, ))
 
 def delete_client(conn, client_id):
     pass
@@ -70,3 +86,5 @@ with psycopg2.connect(database="client_directory", user="postgres", password="12
         #add_client(cur, "Регина", "Дубовицкая", "regina@ya.ru", "89805476201")
         #add_client(cur, "Лев", "Лещенко", "IliveVova@gmail.com", "89202020300")
         #add_phone(cur, 6, "89204445566")
+        #change_client(cur, 6, "Владимирр", "Винокур", "yayaya@ya.ru")
+        #delete_phone(cur, 6, "89204445566")
