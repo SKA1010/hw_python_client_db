@@ -69,8 +69,15 @@ def delete_phone(conn, id, phone_number):
         WHERE phone_number = %s
         """, (phone_number, ))
 
-def delete_client(conn, client_id):
-    pass
+def delete_client(conn, id):
+    cur.execute("""
+        DELETE FROM phone 
+        WHERE client_id = %s
+       """, (id,))
+    cur.execute("""
+        DELETE FROM client 
+        WHERE id = %s
+       """, (id,))    
 
 def find_client(conn, first_name=None, last_name=None, email=None, phone=None):
     pass
@@ -88,3 +95,4 @@ with psycopg2.connect(database="client_directory", user="postgres", password="12
         #add_phone(cur, 6, "89204445566")
         #change_client(cur, 6, "Владимирр", "Винокур", "yayaya@ya.ru")
         #delete_phone(cur, 6, "89204445566")
+        delete_client(cur, 6)
