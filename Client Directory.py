@@ -43,7 +43,7 @@ def add_phone(cur, client_id, phone_number):
         VALUES (%s, %s)
         """)
 
-
+# Изменение клиента
 
 def change_client(conn, id, name=None, surname=None, email=None):
     cur.execute("""
@@ -63,11 +63,15 @@ def change_client(conn, id, name=None, surname=None, email=None):
         where id = %s
         """, (name, surname, email, id))
 
+# Удаление номера телефона
+
 def delete_phone(conn, id, phone_number):
     cur.execute("""
         DELETE FROM phone 
         WHERE phone_number = %s
         """, (phone_number, ))
+
+# Удаление клиента
 
 def delete_client(conn, id):
     cur.execute("""
@@ -77,14 +81,42 @@ def delete_client(conn, id):
     cur.execute("""
         DELETE FROM client 
         WHERE id = %s
-       """, (id,))    
+        """, (id,))    
 
-def find_client(conn, first_name=None, last_name=None, email=None, phone=None):
-    pass
+# Поиск клиента
 
+def find_client(conn, name=None, surname=None, email=None, phone_number=None):
+    if name is None:
+        name = "%"
+    else:
+        name = "%" + name + "%"
+    if surname is None:
+        surname = "%"
+    else:
+        surname = "%" + surname + "%"
+    if email is None:
+        email = "%"
+    else:
+        email = "%" + email + "%"
+    if phone_number is None:
+        cur.execute("""
+            SELECT cl.id, cl.name, cl.surname, cl.email, ph.phone_number FROM client cl
+            LEFT JOIN phone ph ON cl.id = ph.client_id
+            WHERE cl.name LIKE %s AND cl.surname LIKE %s
+            AND cl.email LIKE %s
+            """, (name, surname, email))
+    else:
+        cur.execute("""
+            SELECT cl.id, cl.name, cl.surname, cl.email, ph.phone_number FROM client cl
+            LEFT JOIN phone ph ON cl.id = ph.client_id
+            WHERE cl.name LIKE %s AND cl.surname LIKE %s
+            AND cl.email LIKE %s AND ph.phone_number LIKE %s
+            """, (name, surname, email, phone_number))
+    print('Найден следующий пользователь: ', cur.fetchone())
+
+# Вызов функции
 
 with psycopg2.connect(database="client_directory", user="postgres", password="123") as conn:
-    # вызывайте функции здесь
     with conn.cursor() as cur:
         #create_db(cur)
         #add_client(cur, "Алла", "Пугачёва", "IloveMaksim@yahoo.com", "8953485125")
@@ -95,4 +127,7 @@ with psycopg2.connect(database="client_directory", user="postgres", password="12
         #add_phone(cur, 6, "89204445566")
         #change_client(cur, 6, "Владимирр", "Винокур", "yayaya@ya.ru")
         #delete_phone(cur, 6, "89204445566")
-        delete_client(cur, 6)
+        #delete_client(cur, 6)
+        find_client(cur, "Максим", "Галкин")
+        find_client(cur, "", "", "", "89202020300")
+        find_client(cur, "", "", "Iloverussia@ya.ru",)
